@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>مصممة ميساء اسألة</title>
+    <style>
+        body {
+            font-family: 'Cairo', Arial, sans-serif;
+            background-color: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            color: #ffffff;
+        }
+        .container {
+            background-color: #16213e;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 350px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        h1 {
+            color: #0f3460;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        #game-image {
+            max-width: 300px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        #timer {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #e94560;
+            font-weight: bold;
+        }
+        #question {
+            margin-bottom: 25px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #f0f0f0;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        .correct { 
+            background-color: #4caf50; 
+            color: white; 
+        }
+        .incorrect { 
+            background-color: #f44336; 
+            color: white; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>اختبار ميساء في فري فاير</h1>
+        <img id="game-image" src="https://static.wikia.nocookie.net/freefiredes/images/c/c1/c9186f9271fa770b0cda70cf75e.jpg" alt="Free Fire Game Image">
+        <div id="timer">30</div>
+        <div id="question"></div>
+        <div id="choices"></div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "ما هو اسم الشخصية المحبوبة عند ميساء؟",
+                choices: ["ألوك", "كيلي", "تاتسويا", "وكونغ"],
+                correct: 1
+            },
+            {
+                question: "كم عدد اللاعبين في كل معركة في فري فاير؟",
+                choices: ["50 لاعب", "100 لاعب", "40 لاعب", "60 لاعب"],
+                correct: 0
+            },
+            {
+                question: "أي خريطة هي مفضلة عند ميساء في فري فاير؟",
+                choices: ["كلهاري", "برمودا", "برازيليا", "برمودا لجديده"],
+                correct: 1
+            },
+            {
+                question: "كيف يمكن للاعب الحصول على سلاح أفضل؟",
+                choices: ["بالشراء", "من الصناديق", "من النقاط", "من المتجر"],
+                correct: 1
+            },
+            {
+                question: "ما هو أقوى سلاح في فري فاير؟",
+                choices: ["AK", "M4A1", "AWM", "قنبلة يدوية"],
+                correct: 2
+            },
+            {
+                question: "كم عدد الأسلحة التي يمكن حملها؟",
+                choices: ["3 أسلحة", "2 سلاح", "4 أسلحة", "5 أسلحة"],
+                correct: 1
+            },
+            {
+                question: "ما هو الوضع الذي يمكنك فيه اللعب مع فريق؟",
+                choices: ["سكواد", "سولو", "دو", "كوبل"],
+                correct: 0
+            },
+            {
+                question: "كيف تحصل على النقاط في اللعبة؟",
+                choices: ["بالقتل", "بالبقاء", "كلاهما", "الانتصار"],
+                correct: 2
+            },
+            {
+                question: "هل تحب ميساء ؟",
+                choices: ["yes", "no", "la", "now"],
+                correct: 0
+            },
+            {
+                question: "ما هو أهم شيء للفوز في اللعبة؟",
+                choices: ["الأسلحة", "الذخيرة", "المهارة", "الحظ"],
+                correct: 2
+            }
+        ];
+
+        let currentQuestion = 0;
+        let timeLeft = 30;
+        let timerInterval;
+        let score = 0;
+
+        const gameImage = document.getElementById('game-image');
+        const timerElement = document.getElementById('timer');
+        const questionElement = document.getElementById('question');
+        const choicesElement = document.getElementById('choices');
+        const resultElement = document.getElementById('result');
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            const current = questions[currentQuestion];
+            questionElement.textContent = current.question;
+            timeLeft = 30;
+            timerElement.textContent = timeLeft;
+            
+            choicesElement.innerHTML = '';
+            current.choices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.textContent = choice;
+                button.classList.add('btn');
+                button.onclick = () => checkAnswer(index);
+                choicesElement.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedIndex) {
+            const current = questions[currentQuestion];
+            const buttons = choicesElement.getElementsByClassName('btn');
+            
+            clearInterval(timerInterval);
+            
+            for (let button of buttons) {
+                button.disabled = true;
+            }
+
+            if (selectedIndex === current.correct) {
+                buttons[selectedIndex].classList.add('correct');
+                score++;
+            } else {
+                buttons[selectedIndex].classList.add('incorrect');
+                buttons[current.correct].classList.add('correct');
+            }
+
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    loadQuestion();
+                    startTimer();
+                } else {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            questionElement.style.display = 'none';
+            choicesElement.style.display = 'none';
+            gameImage.style.display = 'none';
+            resultElement.textContent = `نتيجتك: ${score} من ${questions.length}`;
+            resultElement.style.color = score === questions.length ? 'green' : 'red';
+        }
+
+        // Start the game
+        loadQuestion();
+        startTimer();
+    </script>
+</body>
+</html>
